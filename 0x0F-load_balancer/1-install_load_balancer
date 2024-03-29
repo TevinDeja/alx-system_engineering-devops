@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+# Install HAProxy
+apt-get -y update
+apt-get -y install haproxy=1.8.\* --no-install-recommends
+
+# Configure HAProxy
+cat << EOF > /etc/haproxy/haproxy.cfg
+global
+    log /dev/log local0
+    log /dev/log local1 notice
+    chroot /var/lib/haproxy
+    stats socket /run/haproxy/admin.sock mode 660 level admin expose-fd listeners
+    stats timeout 30s
+    user haproxy
+    group haproxy
+    daemon
+
+defaults
+    log global
+    mode http
+    option httplog
+    option dontlognull
+    timeout connect 5000
+    timeout client 50000
+    timeout server 50000
+
+frontend http
+    bind *:80
+    default_backend backend_servers
+
+backend backend_servers
+    balance roundrobin
+    server web-01 STUDENT_ID-web-01:80 check
+    server web-02 STUDENT_ID-web-02:80 check
+EOF
+
+# Replace STUDENT_ID with your actual student ID
+sed -i "s/STUDENT_ID/$STUDENT_ID/g" /etc/haproxy/haproxy.cfg
+
+# Configure HAProxy to start automatically at boot
+echo 'ENABLED=1' >> /etc/default/haproxy
+
+# Restart HAProxy
+systemctl restart haproxy
