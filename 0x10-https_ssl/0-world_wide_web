@@ -1,34 +1,44 @@
 #!/usr/bin/env bash
 
-# Function to get subdomain information
-get_subdomain_info() {
-    local domain="$1"
-    local subdomain="$2"
-    local record_type=""
-    local destination=""
+# Function to display information about a subdomain
+display_subdomain_info() {
+    local subdomain=$1
+    local domain=$2
 
-    # Check if only domain is provided
-    if [ -z "$subdomain" ]; then
-        for sub in www lb-01 web-01 web-02; do
-            record_type=$(dig +short "$sub.$domain" | awk '/^[a-zA-Z]/ {print $4}')
-            destination=$(dig +short "$sub.$domain" | awk '/^[0-9]/ {print $1}')
-            echo "The subdomain $sub is a $record_type record and points to $destination"
-        done
-    else
-        # Get information for the specified subdomain
-        record_type=$(dig +short "$subdomain.$domain" | awk '/^[a-zA-Z]/ {print $4}')
-        destination=$(dig +short "$subdomain.$domain" | awk '/^[0-9]/ {print $1}')
+    # Retrieve DNS information for the subdomain
+    dns_info=$(dig +short $subdomain.$domain)
+
+    # Determine the record type
+    if [[ -n "$dns_info" ]]; then
+        record_type=$(echo "$dns_info" | awk '{ if (NR==1) {print "A";} else {print "CNAME";}}')
+        destination=$(echo "$dns_info" | awk 'NR==1{print $1}')
         echo "The subdomain $subdomain is a $record_type record and points to $destination"
+    else
+        echo "The subdomain $subdomain does not exist for domain $domain"
     fi
 }
 
-# Main script
-if [ $# -lt 1 ] || [ $# -gt 2 ]; then
-    echo "Usage: $0 domain [subdomain]"
+# Main function to handle command line arguments
+main() {
+    local domain=$1
+    local subdomain=$2
+
+    if [[ -z $subdomain ]]; then
+        # Display information for default subdomains
+        display_subdomain_info www $domain
+        display_subdomain_info lb-01 $domain
+        display_subdomain_info web-01 $domain
+        display_subdomain_info web-02 $domain
+    else
+        # Display information for the specified subdomain
+        display_subdomain_info $subdomain $domain
+    fi
+}
+
+# Check if required arguments are provided
+if [[ $# -lt 1 ]]; then
+    echo "Usage: $0 <domain> [subdomain]"
     exit 1
 fi
 
-domain="$1"
-subdomain="${2:-}"
-
-get_subdomain_info "$domain" "$subdomain"
+main "$@"
