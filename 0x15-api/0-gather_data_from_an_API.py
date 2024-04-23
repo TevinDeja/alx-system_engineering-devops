@@ -3,8 +3,8 @@
 Using this REST API for a given employee ID
 returns information about his/her TODO list progress
 """
-import urllib.request
 import json
+import urllib.request
 
 def get_employee_tasks(employee_id):
     url = f"https://jsonplaceholder.typicode.com/todos?userId={employee_id}"
