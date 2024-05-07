@@ -3,10 +3,7 @@
 function that queries the Reddit API
 returns the number of subscribers for a given subreddit
 """
-
-
 import requests
-
 
 def count_words(subreddit, word_list, after='', word_dict={}):
     """ A function that queries the Reddit API parses the title of
