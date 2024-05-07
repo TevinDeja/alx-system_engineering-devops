@@ -2,7 +2,9 @@
 """ 
 function that queries the Reddit API
 """
+
 import requests
+
 
 def count_words(subreddit, word_list, after='', word_dict={}):
     """ 
