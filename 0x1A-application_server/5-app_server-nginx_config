@@ -1,0 +1,60 @@
+server {
+    # Listen on port 80
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    # Alias for serving static files from a specific directory
+    location /hbnb_static {
+        alias /data/web_static/current/;
+    }
+
+    # Set the root directory for the server
+    root /var/www/html;
+
+    # Define index files
+    index index.html index.htm index.nginx-debian.html;
+
+    # Set the server name to default
+    server_name_;
+
+    # Add a custom header to HTTP response
+    add_header X-Served-By $hostname;
+
+    # Define the location for serving static files
+    location /static/ {
+        # Alias for serving static files from a specific directory
+        alias /home/ubuntu/AirBnB_clone_v4/web_dynamic/static/;
+        try_files $uri $uri/ =404;
+    }
+
+    # Define the main location block
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    # Proxy pass for /airbnb-onepage route
+    location /airbnb-onepage {
+        proxy_pass http://0.0.0.0:5000/airbnb-onepage;
+    }
+
+    # Proxy pass for dynamic route /airbnb-dynamic/number_odd_or_even/
+    location ~ ^/airbnb-dynamic/number_odd_or_even/([0-9]+)$ {
+        proxy_pass http://0.0.0.0:5001/number_odd_or_even/$1;
+    }
+
+    # Proxy pass for API requests
+    location /api/ {
+        proxy_pass http://0.0.0.0:5002;
+    }
+
+    # Redirect rule for a specific request filename
+    if ($request_filename ~ redirect_me) {
+        rewrite ^ https://th3-gr00t.tk/ permanent;
+    }
+
+    # Define the location for the 404 error page
+    error_page 404 /error_404.html;
+    location = /error_404.html {
+        internal;
+    }
+}
